@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paper Star Project ⭐</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  body {
+    min-height: 100vh;
+    font-family: Georgia, serif;
+    background: linear-gradient(to bottom, #f7efe7, #f2e6dd);
+    color: #5a4a42;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+  }
+
+  #homeWrapper, #diaryPage, #viewPage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+  }
+
+  #homeWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #title {
+    font-size: 2em;
+    margin: 0;
+    text-align: center;
+  }
+
+  #subtitle {
+    text-align: center;
+    margin: 12px 0 0;
+  }
+
+  .menu {
+    margin-top: 30px;
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn {
+    width: 260px;
+    margin: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.6);
+    text-align: center;
+    cursor: pointer;
+  }
+
+  #diaryPage, #viewPage {
+    display: none;
+    max-width: 100vw;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  #diaryPage {
+    padding-bottom: 24px;
+  }
+
+  .topBar {
+    position: relative;
+    width: 100%;
+    max-width: 95vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 10vh;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding: 15px 20px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 15px;
+    box-sizing: border-box;
+  }
+
+  .left, .center, .right {
+    display: flex;
+    align-items: center;
+  }
+
+  .center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    justify-content: center;
+    flex: 0 0 auto;
+  }
+
+  .topBar h2.center {
+    pointer-events: none;
+  }
+
+  .topBar div {
+    white-space: nowrap;
+  }
+
+  #titleInput {
+    width: 50%;
+    padding: 6px;
+    border: 1px solid rgba(180,150,140,0.3);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.6);
+    outline: none;
+    color: #5a4a42;
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    box-sizing: border-box;
+  }
+
+  .editorArea {
+    width: 95vw;
+    max-width: 95vw;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: calc(100vh - 150px);
+    padding: 8px 0 24px;
+    box-sizing: border-box;
+    overflow-y: auto;
+  }
+
+  .toolRow {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .toolBtn {
+    border: none;
+    border-radius: 12px;
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.82);
+    color: #5a4a42;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+  }
+
+  .noteSurface {
+    background: rgba(255,255,255,0.72);
+    border-radius: 18px;
+    padding: 18px;
+    box-sizing: border-box;
+    flex: 1;
+    min-height: 100%;
+    display: flex;
+  }
+
+  #editorInput {
+    width: 100%;
+    min-height: 420px;
+    outline: none;
+    border: none;
+    background: transparent;
+    color: #5a4a42;
+    font-size: 16px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  #editorInput:empty:before {
+    content: attr(data-placeholder);
+    color: rgba(90,74,66,0.55);
+  }
+
+  .inlineImageWrap {
+    display: inline-block;
+    width: 240px;
+    min-width: 120px;
+    max-width: 100%;
+    margin: 10px 0;
+    resize: both;
+    overflow: auto;
+    vertical-align: top;
+  }
+
+  .inlineImageWrap img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: contain;
+    user-select: none;
+    cursor: pointer;
+  }
+
+  .inlineImageWrap.selected img {
+    outline: 2px solid rgba(90,74,66,0.45);
+    border-radius: 8px;
+  }
+
+  .inlineImageWrap.dragging {
+    opacity: 0.5;
+  }
+
+  .checkItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.78);
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin: 10px 0;
+  }
+
+  .checkCircle {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 2px solid #5a4a42;
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
+    padding: 0;
+  }
+
+  .checkCircle.checked {
+    background: #5a4a42;
+  }
+
+  .checkText {
+    flex: 1;
+    font-size: 15px;
+    line-height: 1.4;
+    word-break: break-word;
+    color: #5a4a42;
+  }
+
+  .checkText.done {
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .checkInput {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #5a4a42;
+    -webkit-text-fill-color: #5a4a42;
+    caret-color: #5a4a42;
+    opacity: 1;
+    font-size: 15px;
+    font-family: inherit;
+  }
+
+  .checkInput::placeholder {
+    color: rgba(90,74,66,0.55);
+    -webkit-text-fill-color: rgba(90,74,66,0.55);
+  }
+
+  .smallAction {
+    border: none;
+    background: transparent;
+    color: #5a4a42;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 2px 6px;
+  }
+
+  #folderRow {
+    width: 95vw;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+  }
+
+  .folderBtn {
+    background: #5a4a42;
+    color: #f7efe7;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  #list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .entry, .folderEntry {
+    width: 100%;
+    max-width: 900px;
+    margin: 12px auto;
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 14px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .folderEntry {
+    padding: 20px 22px;
+    font-size: 17px;
+  }
+
+  .itemMain {
+    flex: 1;
+    min-width: 0;
+    cursor: pointer;
+  }
+
+  .itemActions {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .plusBtn {
+    background: #5a4a42;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+
+  .dotBtn {
+    border: none;
+    background: transparent;
+    color: #5a4a42;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .optionsMenu {
+    position: absolute;
+    top: 28px;
+    right: 0;
+    min-width: 150px;
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 12px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.12);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 50;
+  }
+
+  .optionsMenu button {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: #5a4a42;
+    padding: 12px 14px;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0;
+    font-family: inherit;
+  }
+
+  .optionsMenu button:hover {
+    background: rgba(90,74,66,0.08);
+  }
+
+  .trashBtn {
+    cursor: pointer;
+    color: #5a4a42;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+
+  .trashBtn:hover {
+    background: rgba(90,74,66,0.1);
+  }
+
+  .entry.moving {
+    opacity: 0.4;
+    transform: scale(0.98);
+    transition: 0.2s;
+  }
+
+  .emptyState {
+    color: rgba(90,74,66,0.78);
+    text-align: center;
+    margin-top: 30px;
+  }
+
+  #folderPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+  }
+
+  .popupBox {
+    background: #f7efe7;
+    padding: 20px;
+    border-radius: 12px;
+    width: 320px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+
+  .popupBox input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-family: inherit;
+  }
+
+  .popupActions {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-around;
+    gap: 10px;
+  }
+
+  .popupActions button {
+    background: #5a4a42;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  #passwordPopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2100;
+  }
+
+  #passwordError {
+    margin-top: 10px;
+    min-height: 18px;
+    color: #a14f4f;
+    font-size: 13px;
+  }
+
+  @media (max-width: 700px) {
+    #titleInput {
+      width: 58%;
+      font-size: 16px;
+    }
+
+    .topBar {
+      padding: 12px 14px;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="homeWrapper">
+  <h1 id="title">Forever Star</h1>
+  <h2 id="subtitle">Here’s all my secrets I hope you like that</h2>
+
+  <div class="menu">
+    <div class="btn" onclick="createEntry()">Whisper to The Stars</div>
+    <div class="btn" onclick="deleteMode()">Take the Wish Back</div>
+    <div class="btn" onclick="editMode()">Rewrite the Stars</div>
+    <div class="btn" onclick="requestDiaryAccess()">My Hidden Wishes</div>
+  </div>
+</div>
+
+<div id="diaryPage">
+  <div class="topBar">
+    <div class="left" onclick="goBack()">← Back</div>
+    <input class="center" id="titleInput" name="fresh-title-field" placeholder="Title..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <span class="right" id="saveBtn" onclick="saveEntry()">Save</span>
+  </div>
+
+  <div class="editorArea">
+    <div class="toolRow">
+      <button class="toolBtn" id="imageBtn" onclick="openImagePicker()">Attach Image</button>
+      <button class="toolBtn" id="checkBtn" onclick="insertChecklistAtCursor()">Add Checklist</button>
+      <input type="file" id="imageInput" accept="image/*" multiple style="display:none;">
+    </div>
+
+    <div class="noteSurface">
+      <div id="editorInput" contenteditable="true" data-placeholder="Write here..."></div>
+    </div>
+  </div>
+</div>
+
+<div id="viewPage">
+  <div class="topBar">
+    <div class="left" onclick="goBack()">← Back</div>
+    <h2 class="center" id="viewTitle">My Hidden Wishes</h2>
+    <div></div>
+  </div>
+
+  <div id="folderRow">
+    <button id="folderBtn" class="folderBtn" onclick="openFolderPopup('create')">+ Folder</button>
+  </div>
+
+  <div id="list"></div>
+</div>
+
+<div id="folderPopup">
+  <div class="popupBox">
+    <h3 id="folderPopupTitle">Create Folder</h3>
+    <input id="folderInput" placeholder="Folder name...">
+    <div class="popupActions">
+      <button onclick="submitFolderPopup()">Save</button>
+      <button onclick="closeFolderPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="passwordPopup">
+  <div class="popupBox">
+    <h3>Enter Password</h3>
+    <input id="passwordInput" type="password" placeholder="Password...">
+    <div id="passwordError"></div>
+    <div class="popupActions">
+      <button onclick="submitPassword()">Open</button>
+      <button onclick="closePasswordPopup()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentMode = "view";
+let editIndex = null;
+let currentEntryToMove = null;
+let activeFolderIndex = null;
+let lastListMode = "view";
+let folderPopupMode = "create";
+let folderEditIndex = null;
+let draggedImageBlock = null;
+
+const titleInput = document.getElementById("titleInput");
+const saveBtn = document.getElementById("saveBtn");
+const homeWrapper = document.getElementById("homeWrapper");
+const diaryPage = document.getElementById("diaryPage");
+const viewPage = document.getElementById("viewPage");
+const viewTitle = document.getElementById("viewTitle");
+const list = document.getElementById("list");
+const folderBtn = document.getElementById("folderBtn");
+const imageInput = document.getElementById("imageInput");
+const imageBtn = document.getElementById("imageBtn");
+const checkBtn = document.getElementById("checkBtn");
+const editorInput = document.getElementById("editorInput");
+const passwordPopup = document.getElementById("passwordPopup");
+const passwordInput = document.getElementById("passwordInput");
+const passwordError = document.getElementById("passwordError");
+
+titleInput.spellcheck = false;
+
+function getDiaries() {
+  return JSON.parse(localStorage.getItem("diaries")) || [];
+}
+
+function setDiaries(data) {
+  localStorage.setItem("diaries", JSON.stringify(data));
+}
+
+function getFolders() {
+  return JSON.parse(localStorage.getItem("folders")) || [];
+}
+
+function setFolders(data) {
+  localStorage.setItem("folders", JSON.stringify(data));
+}
+
+function hideMenus() {
+  document.querySelectorAll(".optionsMenu").forEach(menu => {
+    menu.style.display = "none";
+  });
+}
+
+function sanitizeEditorHtml(html) {
+  if (!html) return "";
+
+  const wrapper = document.createElement("div");
+  wrapper.innerHTML = html;
+
+  wrapper.querySelectorAll("script").forEach(node => node.remove());
+
+  wrapper.querySelectorAll(".inlineImageWrap").forEach(block => {
+    block.setAttribute("contenteditable", "false");
+    block.setAttribute("draggable", "true");
+  });
+
+  wrapper.querySelectorAll(".checkItem").forEach(item => {
+    item.setAttribute("contenteditable", "false");
+  });
+
+  return wrapper.innerHTML;
+}
+
+function resetDraftState() {
+  titleInput.value = "";
+  editorInput.innerHTML = "";
+}
+
+function requestDiaryAccess() {
+  passwordInput.value = "";
+  passwordError.textContent = "";
+  passwordPopup.style.display = "flex";
+  setTimeout(() => passwordInput.focus(), 0);
+}
+
+function closePasswordPopup() {
+  passwordPopup.style.display = "none";
+  passwordInput.value = "";
+  passwordError.textContent = "";
+}
+
+function submitPassword() {
+  if (passwordInput.value === "2204") {
+    closePasswordPopup();
+    viewEntries();
+    return;
+  }
+
+  passwordError.textContent = "Wrong password.";
+  passwordInput.select();
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function showDiaryPage(readOnly = false) {
+  homeWrapper.style.display = "none";
+  viewPage.style.display = "none";
+  diaryPage.style.display = "flex";
+
+  titleInput.readOnly = readOnly;
+  editorInput.contentEditable = readOnly ? "false" : "true";
+  saveBtn.style.display = readOnly ? "none" : "block";
+  imageBtn.style.display = readOnly ? "none" : "inline-block";
+  checkBtn.style.display = readOnly ? "none" : "inline-block";
+
+  editorInput.querySelectorAll(".checkInput").forEach(input => {
+    input.readOnly = readOnly;
+  });
+
+  editorInput.querySelectorAll(".smallAction").forEach(btn => {
+    btn.style.display = readOnly ? "none" : "inline-block";
+  });
+}
+
+function createEntry() {
+  currentMode = "create";
+  editIndex = null;
+  resetDraftState();
+  showDiaryPage(false);
+}
+
+function openImagePicker() {
+  imageInput.click();
+}
+
+imageInput.addEventListener("change", async event => {
+  const files = [...event.target.files];
+  if (!files.length) return;
+
+  const images = await Promise.all(files.map(fileToDataUrl));
+  images.forEach(src => insertImageAtCursor(src));
+  imageInput.value = "";
+});
+
+function fileToDataUrl(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+function placeCaretAtEnd(target) {
+  target.focus();
+  const range = document.createRange();
+  range.selectNodeContents(target);
+  range.collapse(false);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function insertNodeAtCursor(node) {
+  editorInput.focus();
+  const selection = window.getSelection();
+
+  if (!selection.rangeCount || !editorInput.contains(selection.anchorNode)) {
+    placeCaretAtEnd(editorInput);
+  }
+
+  const range = window.getSelection().getRangeAt(0);
+  range.deleteContents();
+  range.insertNode(node);
+  range.setStartAfter(node);
+  range.collapse(true);
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function makeImageBlock(src) {
+  const block = document.createElement("div");
+  block.className = "inlineImageWrap";
+  block.contentEditable = "false";
+  block.draggable = true;
+  block.innerHTML = `<img src="${src}" alt="Attached image">`;
+  return block;
+}
+
+function insertImageAtCursor(src) {
+  const block = makeImageBlock(src);
+  const wrapper = document.createElement("div");
+  wrapper.appendChild(block);
+  wrapper.appendChild(document.createElement("br"));
+  insertNodeAtCursor(wrapper);
+}
+
+function makeChecklistItem(text = "", done = false) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "checkItem";
+  wrapper.contentEditable = "false";
+  wrapper.innerHTML = `
+    <button class="checkCircle ${done ? "checked" : ""}" type="button"></button>
+    <input class="checkInput" value="${escapeHtml(text)}" placeholder="Write checklist item...">
+    <button class="smallAction" type="button">×</button>
+  `;
+  return wrapper;
+}
+
+function insertChecklistAtCursor() {
+  const item = makeChecklistItem();
+  const wrapper = document.createElement("div");
+  wrapper.appendChild(item);
+  wrapper.appendChild(document.createElement("br"));
+  insertNodeAtCursor(wrapper);
+}
+
+function syncChecklistBeforeSave() {
+  editorInput.querySelectorAll(".checkItem").forEach(item => {
+    const input = item.querySelector(".checkInput");
+    const circle = item.querySelector(".checkCircle");
+
+    if (input) {
+      input.setAttribute("value", input.value);
+      input.style.color = "#5a4a42";
+      input.style.webkitTextFillColor = "#5a4a42";
+      input.style.opacity = circle && circle.classList.contains("checked") ? "0.7" : "1";
+      input.style.textDecoration = circle && circle.classList.contains("checked") ? "line-through" : "none";
+    }
+  });
+}
+
+function currentNoteHtml() {
+  syncChecklistBeforeSave();
+  return sanitizeEditorHtml(editorInput.innerHTML.trim());
+}
+
+function saveCurrentChecklistState() {
+  if (editIndex === null) return;
+
+  const data = getDiaries();
+  if (!data[editIndex]) return;
+
+  data[editIndex].content = currentNoteHtml();
+  setDiaries(data);
+}
+
+function saveEntry() {
+  const title = titleInput.value.trim() || "Untitled";
+  const content = currentNoteHtml();
+
+  if (!content.replace(/<[^>]*>/g, "").trim() && !content.includes("inlineImageWrap") && !content.includes("checkItem")) return;
+
+  const data = getDiaries();
+  const previous = editIndex !== null ? data[editIndex] : null;
+  const entry = {
+    title,
+    content,
+    hidden: previous ? !!previous.hidden : false
+  };
+
+  if (editIndex !== null) {
+    data[editIndex] = entry;
+  } else {
+    data.push(entry);
+  }
+
+  setDiaries(data);
+  goHome();
+}
+
+function viewEntries() {
+  currentMode = "view";
+  lastListMode = "view";
+  currentEntryToMove = null;
+  activeFolderIndex = null;
+  homeWrapper.style.display = "none";
+  diaryPage.style.display = "none";
+  viewPage.style.display = "flex";
+
+  list.innerHTML = "";
+  viewTitle.innerText = "My Hidden Wishes";
+  folderBtn.style.display = "block";
+  hideMenus();
+
+  const data = getDiaries();
+  const folders = getFolders();
+
+  folders.forEach((folder, index) => {
+    const div = document.createElement("div");
+    div.className = "folderEntry";
+    div.innerHTML = `
+      <div class="itemMain" onclick="handleFolderClick(${index})">
+        <span>📁 <b>${escapeHtml(folder.name)}</b></span>
+      </div>
+      <div class="itemActions">
+        <button class="dotBtn" onclick="toggleFolderMenu(event, ${index})">⋮</button>
+        <div class="optionsMenu" id="folderMenu-${index}">
+          <button onclick="startRenameFolder(${index})">Rename Folder</button>
+          <button onclick="deleteFolder(${index})">Delete Folder</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+
+  data.forEach((entry, index) => {
+    if (entry.hidden) return;
+
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.innerHTML = `
+      <span class="itemMain" onclick="openView(${index})">
+        <b>${escapeHtml(entry.title)}</b>
+      </span>
+      <button class="plusBtn" onclick="addToFolder(${index})">+</button>
+    `;
+    list.appendChild(div);
+  });
+
+  if (!folders.length && !data.some(entry => !entry.hidden)) {
+    list.innerHTML = '<div class="emptyState">No wishes yet.</div>';
+  }
+}
+
+function editMode() {
+  currentMode = "edit";
+  lastListMode = "edit";
+  currentEntryToMove = null;
+  activeFolderIndex = null;
+  homeWrapper.style.display = "none";
+  diaryPage.style.display = "none";
+  viewPage.style.display = "flex";
+
+  list.innerHTML = "";
+  viewTitle.innerText = "Rewrite the Stars";
+  folderBtn.style.display = "none";
+  hideMenus();
+
+  getDiaries().forEach((entry, index) => {
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.innerHTML = `
+      <div class="itemMain" onclick="openEdit(${index})">
+        <b>${escapeHtml(entry.title)}</b>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function deleteMode() {
+  currentMode = "delete";
+  lastListMode = "delete";
+  currentEntryToMove = null;
+  activeFolderIndex = null;
+  homeWrapper.style.display = "none";
+  diaryPage.style.display = "none";
+  viewPage.style.display = "flex";
+
+  list.innerHTML = "";
+  viewTitle.innerText = "Take the Wish Back";
+  folderBtn.style.display = "none";
+  hideMenus();
+
+  getDiaries().forEach((entry, index) => {
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.innerHTML = `
+      <div class="itemMain">
+        <b>${escapeHtml(entry.title)}</b>
+      </div>
+      <div class="trashBtn" onclick="deleteOne(${index})">🗑</div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function openEdit(index) {
+  const data = getDiaries();
+  const entry = data[index];
+  if (!entry) return;
+
+  currentMode = "edit-entry";
+  editIndex = index;
+  titleInput.value = entry.title || "";
+  editorInput.innerHTML = sanitizeEditorHtml(entry.content || "");
+  showDiaryPage(false);
+}
+
+function openView(index) {
+  const data = getDiaries();
+  const entry = data[index];
+  if (!entry) return;
+
+  currentMode = "read";
+  editIndex = index;
+  titleInput.value = entry.title || "";
+  editorInput.innerHTML = sanitizeEditorHtml(entry.content || "");
+  showDiaryPage(true);
+}
+
+function deleteOne(index) {
+  const data = getDiaries();
+  data.splice(index, 1);
+  setDiaries(data);
+
+  const folders = getFolders().map(folder => ({
+    ...folder,
+    entries: (folder.entries || [])
+      .filter(entryIndex => entryIndex !== index)
+      .map(entryIndex => (entryIndex > index ? entryIndex - 1 : entryIndex))
+  }));
+  setFolders(folders);
+
+  deleteMode();
+}
+
+function goHome() {
+  currentMode = "home";
+  currentEntryToMove = null;
+  activeFolderIndex = null;
+  editIndex = null;
+  resetDraftState();
+  homeWrapper.style.display = "flex";
+  diaryPage.style.display = "none";
+  viewPage.style.display = "none";
+  hideMenus();
+}
+
+function goBack() {
+  if (diaryPage.style.display === "flex") {
+    if (lastListMode === "folder" && activeFolderIndex !== null) {
+      openFolder(activeFolderIndex);
+      return;
+    }
+
+    if (lastListMode === "view") {
+      viewEntries();
+      return;
+    }
+
+    if (lastListMode === "edit") {
+      editMode();
+      return;
+    }
+
+    if (lastListMode === "delete") {
+      deleteMode();
+      return;
+    }
+
+    goHome();
+    return;
+  }
+
+  goHome();
+}
+
+function openFolderPopup(mode, folderIndex = null) {
+  folderPopupMode = mode;
+  folderEditIndex = folderIndex;
+
+  document.getElementById("folderPopupTitle").innerText = mode === "rename" ? "Rename Folder" : "Create Folder";
+  document.getElementById("folderInput").value = mode === "rename"
+    ? (getFolders()[folderIndex]?.name || "")
+    : "";
+  document.getElementById("folderPopup").style.display = "flex";
+}
+
+function closeFolderPopup() {
+  document.getElementById("folderPopup").style.display = "none";
+  document.getElementById("folderInput").value = "";
+  folderPopupMode = "create";
+  folderEditIndex = null;
+}
+
+function submitFolderPopup() {
+  const name = document.getElementById("folderInput").value.trim();
+  if (!name) return;
+
+  const folders = getFolders();
+
+  if (folderPopupMode === "rename" && folderEditIndex !== null && folders[folderEditIndex]) {
+    folders[folderEditIndex].name = name;
+  } else {
+    folders.push({ name, entries: [] });
+  }
+
+  setFolders(folders);
+  closeFolderPopup();
+  viewEntries();
+}
+
+function startRenameFolder(index) {
+  hideMenus();
+  openFolderPopup("rename", index);
+}
+
+function addToFolder(entryIndex) {
+  currentEntryToMove = entryIndex;
+  currentMode = "move";
+  hideMenus();
+
+  document.querySelectorAll(".entry").forEach(el => {
+    el.classList.remove("moving");
+  });
+
+  const visibleEntries = [...document.querySelectorAll(".entry")];
+  const clickedButton = visibleEntries.find(el =>
+    el.querySelector(".plusBtn")?.getAttribute("onclick") === `addToFolder(${entryIndex})`
+  );
+
+  if (clickedButton) {
+    clickedButton.classList.add("moving");
+  }
+}
+
+function confirmMoveToFolder(folderIndex) {
+  if (currentEntryToMove === null) return;
+
+  const folders = getFolders();
+  const data = getDiaries();
+
+  if (!folders[folderIndex]) return;
+
+  if (!folders[folderIndex].entries) {
+    folders[folderIndex].entries = [];
+  }
+
+  if (!folders[folderIndex].entries.includes(currentEntryToMove)) {
+    folders[folderIndex].entries.push(currentEntryToMove);
+  }
+
+  if (data[currentEntryToMove]) {
+    data[currentEntryToMove].hidden = true;
+  }
+
+  setFolders(folders);
+  setDiaries(data);
+
+  currentEntryToMove = null;
+  currentMode = "view";
+  viewEntries();
+}
+
+function handleFolderClick(folderIndex) {
+  if (currentMode === "move") {
+    confirmMoveToFolder(folderIndex);
+    return;
+  }
+
+  openFolder(folderIndex);
+}
+
+function openFolder(folderIndex) {
+  const folders = getFolders();
+  const folder = folders[folderIndex];
+  if (!folder) return;
+
+  activeFolderIndex = folderIndex;
+  currentMode = "folder";
+  lastListMode = "folder";
+  currentEntryToMove = null;
+  homeWrapper.style.display = "none";
+  diaryPage.style.display = "none";
+  viewPage.style.display = "flex";
+
+  list.innerHTML = "";
+  viewTitle.innerText = folder.name;
+  folderBtn.style.display = "none";
+  hideMenus();
+
+  const data = getDiaries();
+  const folderEntries = (folder.entries || [])
+    .map(entryIndex => ({ entry: data[entryIndex], entryIndex }))
+    .filter(item => item.entry);
+
+  if (!folderEntries.length) {
+    list.innerHTML = '<div class="emptyState">This folder is empty.</div>';
+    return;
+  }
+
+  folderEntries.forEach(({ entry, entryIndex }) => {
+    const div = document.createElement("div");
+    div.className = "entry";
+    div.innerHTML = `
+      <div class="itemMain" onclick="openView(${entryIndex})">
+        <b>${escapeHtml(entry.title)}</b>
+      </div>
+      <div class="itemActions">
+        <button class="dotBtn" onclick="toggleFolderEntryMenu(event, ${entryIndex})">⋮</button>
+        <div class="optionsMenu" id="folderEntryMenu-${entryIndex}">
+          <button onclick="removeFromFolder(${entryIndex})">Remove from Folder</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function toggleFolderMenu(event, folderIndex) {
+  event.stopPropagation();
+  const menu = document.getElementById(`folderMenu-${folderIndex}`);
+  const nextDisplay = menu.style.display === "flex" ? "none" : "flex";
+  hideMenus();
+  menu.style.display = nextDisplay;
+}
+
+function toggleFolderEntryMenu(event, entryIndex) {
+  event.stopPropagation();
+  const menu = document.getElementById(`folderEntryMenu-${entryIndex}`);
+  const nextDisplay = menu.style.display === "flex" ? "none" : "flex";
+  hideMenus();
+  menu.style.display = nextDisplay;
+}
+
+function deleteFolder(folderIndex) {
+  const folders = getFolders();
+  const folder = folders[folderIndex];
+  if (!folder) return;
+
+  const data = getDiaries();
+  (folder.entries || []).forEach(entryIndex => {
+    if (data[entryIndex]) {
+      data[entryIndex].hidden = false;
+    }
+  });
+
+  folders.splice(folderIndex, 1);
+  setDiaries(data);
+  setFolders(folders);
+
+  activeFolderIndex = null;
+  hideMenus();
+  viewEntries();
+}
+
+function removeFromFolder(entryIndex) {
+  if (activeFolderIndex === null) return;
+
+  const folders = getFolders();
+  const folder = folders[activeFolderIndex];
+  if (!folder) return;
+
+  folder.entries = (folder.entries || []).filter(index => index !== entryIndex);
+
+  const data = getDiaries();
+  if (data[entryIndex]) {
+    data[entryIndex].hidden = false;
+  }
+
+  setFolders(folders);
+  setDiaries(data);
+  hideMenus();
+  openFolder(activeFolderIndex);
+}
+
+editorInput.addEventListener("click", event => {
+  editorInput.querySelectorAll(".inlineImageWrap").forEach(node => {
+    node.classList.remove("selected");
+  });
+
+  const imageWrap = event.target.closest(".inlineImageWrap");
+  if (imageWrap) {
+    imageWrap.classList.add("selected");
+    return;
+  }
+
+  const circle = event.target.closest(".checkCircle");
+  if (circle) {
+    circle.classList.toggle("checked");
+    const input = circle.closest(".checkItem")?.querySelector(".checkInput");
+    if (input) {
+      input.style.textDecoration = circle.classList.contains("checked") ? "line-through" : "none";
+      input.style.opacity = circle.classList.contains("checked") ? "0.7" : "1";
+      input.style.color = "#5a4a42";
+      input.style.webkitTextFillColor = "#5a4a42";
+    }
+    if (currentMode === "read") {
+      saveCurrentChecklistState();
+    }
+    return;
+  }
+
+  const removeBtn = event.target.closest(".smallAction");
+  if (removeBtn) {
+    removeBtn.closest(".checkItem")?.remove();
+    return;
+  }
+});
+
+editorInput.addEventListener("input", event => {
+  if (event.target.classList.contains("checkInput")) {
+    event.target.style.color = "#5a4a42";
+    event.target.style.webkitTextFillColor = "#5a4a42";
+    return;
+  }
+});
+
+editorInput.addEventListener("keydown", event => {
+  const selectedImage = editorInput.querySelector(".inlineImageWrap.selected");
+  if (selectedImage && (event.key === "Delete" || event.key === "Backspace")) {
+    event.preventDefault();
+    selectedImage.parentElement.remove();
+  }
+});
+
+editorInput.addEventListener("dragstart", event => {
+  const block = event.target.closest(".inlineImageWrap");
+  if (!block) return;
+  draggedImageBlock = block.parentElement;
+  block.classList.add("dragging");
+});
+
+editorInput.addEventListener("dragend", event => {
+  const block = event.target.closest(".inlineImageWrap");
+  if (block) {
+    block.classList.remove("dragging");
+  }
+  draggedImageBlock = null;
+});
+
+editorInput.addEventListener("dragover", event => {
+  if (!draggedImageBlock) return;
+  event.preventDefault();
+});
+
+editorInput.addEventListener("drop", event => {
+  if (!draggedImageBlock) return;
+  event.preventDefault();
+
+  const targetBlock = event.target.closest(".inlineImageWrap");
+  if (targetBlock && targetBlock.parentElement !== draggedImageBlock) {
+    targetBlock.parentElement.before(draggedImageBlock);
+    return;
+  }
+
+  editorInput.appendChild(draggedImageBlock);
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".itemActions")) {
+    hideMenus();
+  }
+});
+
+passwordInput.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    submitPassword();
+  }
+});
+
+goHome();
+</script>
+</body>
+</html>
