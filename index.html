@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paper Star Project ⭐</title>
-  <link rel="icon" href="/folder.png">
+<title>Paper Star Project</title>
 <style>
   html, body {
     margin: 0;
@@ -23,11 +22,20 @@
     align-items: center;
   }
 
-  #homeWrapper, #diaryPage, #viewPage {
+  #homeWrapper, #viewPage {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100vh;
+  }
+
+  #diaryPage {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 100vh;
+    height: auto;
   }
 
   #homeWrapper {
@@ -35,6 +43,31 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 14px;
+  }
+
+  .homeTopBar {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95vw;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    z-index: 20;
+  }
+
+  .homeAuthBtn {
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    background: rgba(255,255,255,0.88);
+    color: #5a4a42;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    box-shadow: 0 8px 20px rgba(90,74,66,0.10);
   }
 
   #title {
@@ -113,7 +146,7 @@
     pointer-events: none;
   }
 
-  .topBar div {
+  .topBar div, .topBar span {
     white-space: nowrap;
   }
 
@@ -167,13 +200,15 @@
     padding: 18px;
     box-sizing: border-box;
     flex: 1;
-    min-height: 100%;
+    min-height: calc(100vh - 220px);
+    height: auto;
     display: flex;
   }
 
   #editorInput {
     width: 100%;
-    min-height: 420px;
+    min-height: calc(100vh - 260px);
+    height: auto;
     outline: none;
     border: none;
     background: transparent;
@@ -241,19 +276,6 @@
 
   .checkCircle.checked {
     background: #5a4a42;
-  }
-
-  .checkText {
-    flex: 1;
-    font-size: 15px;
-    line-height: 1.4;
-    word-break: break-word;
-    color: #5a4a42;
-  }
-
-  .checkText.done {
-    text-decoration: line-through;
-    opacity: 0.7;
   }
 
   .checkInput {
@@ -329,6 +351,18 @@
     flex: 1;
     min-width: 0;
     cursor: pointer;
+  }
+
+  .entryTitle {
+    display: block;
+    font-size: 16px;
+  }
+
+  .entryMeta {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: rgba(90,74,66,0.72);
   }
 
   .itemActions {
@@ -411,26 +445,30 @@
     margin-top: 30px;
   }
 
-  #folderPopup {
+  #folderPopup, #passwordPopup, #authPopup {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.3);
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
   }
 
-  .popupBox {
+  #folderPopup { z-index: 2000; }
+  #passwordPopup { z-index: 2100; }
+  #authPopup { z-index: 2200; }
+
+  .popupBox, .authBox {
     background: #f7efe7;
     padding: 20px;
     border-radius: 12px;
-    width: 320px;
-    text-align: center;
+    width: 340px;
     box-sizing: border-box;
+    text-align: center;
   }
 
-  .popupBox input {
+  .popupBox input,
+  .authInput {
     width: 100%;
     padding: 10px;
     margin-top: 10px;
@@ -438,16 +476,19 @@
     border: 1px solid #ccc;
     box-sizing: border-box;
     font-family: inherit;
+    color: #5a4a42;
   }
 
-  .popupActions {
+  .popupActions,
+  .authActions {
     margin-top: 15px;
     display: flex;
     justify-content: space-around;
     gap: 10px;
   }
 
-  .popupActions button {
+  .popupActions button,
+  .authActions button {
     background: #5a4a42;
     color: white;
     border: none;
@@ -455,19 +496,29 @@
     border-radius: 8px;
     cursor: pointer;
     font-family: inherit;
+    flex: 1;
   }
 
-  #passwordPopup {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.3);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 2100;
+  .authSubtext {
+    margin: 0 0 14px;
+    color: rgba(90,74,66,0.75);
+    font-size: 14px;
   }
 
-  #passwordError {
+  .loginLinkBtn {
+    width: 100%;
+    background: rgba(255,255,255,0.9);
+    color: #5a4a42;
+    border: 1px solid rgba(90,74,66,0.18);
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 10px;
+  }
+
+  #passwordError,
+  #authMessage {
     margin-top: 10px;
     min-height: 18px;
     color: #a14f4f;
@@ -488,8 +539,12 @@
 </head>
 <body>
 <div id="homeWrapper">
+  <div class="homeTopBar">
+    <button class="homeAuthBtn" id="homeAuthBtn" onclick="openAuthPopup()">Sign Up</button>
+  </div>
+
   <h1 id="title">Forever Star</h1>
-  <h2 id="subtitle">Here’s all my secrets I hope you like that</h2>
+  <h2 id="subtitle">Here's all my secrets I hope you like that</h2>
 
   <div class="menu">
     <div class="btn" onclick="createEntry()">Whisper to The Stars</div>
@@ -501,8 +556,8 @@
 
 <div id="diaryPage">
   <div class="topBar">
-    <div class="left" onclick="goBack()">← Back</div>
-    <input class="center" id="titleInput" name="fresh-title-field" placeholder="Title..." autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false">
+    <div class="left" onclick="goBack()">&larr; Back</div>
+    <input class="center" id="titleInput" name="fresh-title-field" placeholder="Title..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
     <span class="right" id="saveBtn" onclick="saveEntry()">Save</span>
   </div>
 
@@ -521,7 +576,7 @@
 
 <div id="viewPage">
   <div class="topBar">
-    <div class="left" onclick="goBack()">← Back</div>
+    <div class="left" onclick="goBack()">&larr; Back</div>
     <h2 class="center" id="viewTitle">My Hidden Wishes</h2>
     <div></div>
   </div>
@@ -556,6 +611,27 @@
   </div>
 </div>
 
+<div id="authPopup">
+  <div class="authBox">
+    <h3 id="authTitle">Create Your Account</h3>
+    <p class="authSubtext" id="authSubtext">Use your email and password to save diaries and folders.</p>
+    <input id="authEmail" class="authInput" type="email" placeholder="Email">
+    <input id="authPass" class="authInput" type="password" placeholder="Password">
+    <div id="authMessage"></div>
+    <div class="authActions">
+      <button id="authContinueBtn" onclick="submitEmailAuth()">Continue</button>
+      <button onclick="closeAuthPopup()">Cancel</button>
+    </div>
+    <button class="loginLinkBtn" id="loginLinkBtn" onclick="openLoginTab()">Log In</button>
+    <div class="authActions" style="margin-top:10px;">
+      <button id="signOutBtn" onclick="signOutAccount()" style="display:none;">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
 <script>
 let currentMode = "view";
 let editIndex = null;
@@ -565,6 +641,24 @@ let lastListMode = "view";
 let folderPopupMode = "create";
 let folderEditIndex = null;
 let draggedImageBlock = null;
+
+let firebaseApp = null;
+let firebaseAuth = null;
+let firestoreDb = null;
+let currentUser = null;
+let cloudUnsubscribe = null;
+let suspendCloudSync = false;
+let authMode = "signup";
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCjLvqX4FbscEUZgbkxNiQo9q-Bjr3qkLY",
+  authDomain: "paper-stars.firebaseapp.com",
+  projectId: "paper-stars",
+  storageBucket: "paper-stars.firebasestorage.app",
+  messagingSenderId: "431303486727",
+  appId: "1:431303486727:web:407a35ad63e689ebefe9a2",
+  measurementId: "G-WCQN0DVDSH"
+};
 
 const titleInput = document.getElementById("titleInput");
 const saveBtn = document.getElementById("saveBtn");
@@ -581,15 +675,29 @@ const editorInput = document.getElementById("editorInput");
 const passwordPopup = document.getElementById("passwordPopup");
 const passwordInput = document.getElementById("passwordInput");
 const passwordError = document.getElementById("passwordError");
+const authPopup = document.getElementById("authPopup");
+const authEmail = document.getElementById("authEmail");
+const authPass = document.getElementById("authPass");
+const authMessage = document.getElementById("authMessage");
+const authTitle = document.getElementById("authTitle");
+const authSubtext = document.getElementById("authSubtext");
+const authContinueBtn = document.getElementById("authContinueBtn");
+const loginLinkBtn = document.getElementById("loginLinkBtn");
+const homeAuthBtn = document.getElementById("homeAuthBtn");
+const signOutBtn = document.getElementById("signOutBtn");
 
 titleInput.spellcheck = false;
 
 function getDiaries() {
-  return JSON.parse(localStorage.getItem("diaries")) || [];
+  const raw = JSON.parse(localStorage.getItem("diaries")) || [];
+  return raw.map(entry => normalizeDiaryEntry(entry));
 }
 
 function setDiaries(data) {
   localStorage.setItem("diaries", JSON.stringify(data));
+  if (!suspendCloudSync) {
+    syncStateToCloud();
+  }
 }
 
 function getFolders() {
@@ -598,6 +706,9 @@ function getFolders() {
 
 function setFolders(data) {
   localStorage.setItem("folders", JSON.stringify(data));
+  if (!suspendCloudSync) {
+    syncStateToCloud();
+  }
 }
 
 function hideMenus() {
@@ -626,9 +737,308 @@ function sanitizeEditorHtml(html) {
   return wrapper.innerHTML;
 }
 
+function normalizeDiaryEntry(entry) {
+  const fallbackTime = Date.now();
+  return {
+    title: entry && entry.title ? entry.title : "Untitled",
+    content: entry && entry.content ? entry.content : "",
+    hidden: !!(entry && entry.hidden),
+    createdAt: entry && entry.createdAt ? entry.createdAt : fallbackTime,
+    updatedAt: entry && entry.updatedAt ? entry.updatedAt : (entry && entry.createdAt ? entry.createdAt : fallbackTime)
+  };
+}
+
+function formatRelativeTime(timestamp) {
+  const value = Number(timestamp);
+  if (!value) return "Sent to the stars just now";
+
+  const seconds = Math.max(1, Math.floor((Date.now() - value) / 1000));
+  const ranges = [
+    { label: "year", seconds: 31536000 },
+    { label: "month", seconds: 2592000 },
+    { label: "week", seconds: 604800 },
+    { label: "day", seconds: 86400 },
+    { label: "hour", seconds: 3600 },
+    { label: "minute", seconds: 60 }
+  ];
+
+  for (const range of ranges) {
+    if (seconds >= range.seconds) {
+      const count = Math.floor(seconds / range.seconds);
+      return `Sent to the stars ${count} ${range.label}${count > 1 ? "s" : ""} ago`;
+    }
+  }
+
+  return "Sent to the stars just now";
+}
+
 function resetDraftState() {
   titleInput.value = "";
   editorInput.innerHTML = "";
+}
+
+function hasFirebaseConfig() {
+  return FIREBASE_CONFIG.apiKey &&
+    !FIREBASE_CONFIG.apiKey.includes("YOUR_") &&
+    FIREBASE_CONFIG.projectId &&
+    !FIREBASE_CONFIG.projectId.includes("YOUR_");
+}
+
+function updateAuthUi() {
+  if (currentUser) {
+    homeAuthBtn.textContent = currentUser.email || "Signed In";
+    signOutBtn.style.display = "block";
+  } else {
+    homeAuthBtn.textContent = "Sign Up";
+    signOutBtn.style.display = "none";
+  }
+}
+
+function getCloudDocRef(uid) {
+  return firestoreDb.collection("users").doc(uid).collection("app").doc("paper-star");
+}
+
+function setLocalState(diaries, folders) {
+  suspendCloudSync = true;
+  localStorage.setItem("diaries", JSON.stringify(diaries || []));
+  localStorage.setItem("folders", JSON.stringify(folders || []));
+  suspendCloudSync = false;
+}
+
+function refreshVisibleLists() {
+  if (viewPage.style.display !== "flex") {
+    return;
+  }
+
+  if (currentMode === "folder" && activeFolderIndex !== null) {
+    openFolder(activeFolderIndex);
+    return;
+  }
+
+  if (currentMode === "edit") {
+    editMode();
+    return;
+  }
+
+  if (currentMode === "delete") {
+    deleteMode();
+    return;
+  }
+
+  viewEntries();
+}
+
+async function ensureCloudDataForUser(user) {
+  const localDiaries = getDiaries();
+  const localFolders = getFolders();
+  const localHasData = localDiaries.length > 0 || localFolders.length > 0;
+  const ref = getCloudDocRef(user.uid);
+  const snapshot = await ref.get();
+
+  if (!snapshot.exists) {
+    await ref.set({
+      diaries: localDiaries,
+      folders: localFolders,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      clientUpdatedAt: Date.now()
+    });
+    return;
+  }
+
+  const data = snapshot.data() || {};
+  const cloudDiaries = Array.isArray(data.diaries) ? data.diaries : [];
+  const cloudFolders = Array.isArray(data.folders) ? data.folders : [];
+  const cloudHasData = cloudDiaries.length > 0 || cloudFolders.length > 0;
+
+  if (!cloudHasData && localHasData) {
+    await ref.set({
+      diaries: localDiaries,
+      folders: localFolders,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      clientUpdatedAt: Date.now()
+    }, { merge: true });
+    return;
+  }
+
+  if (localHasData && cloudHasData) {
+    const localState = JSON.stringify({ diaries: localDiaries, folders: localFolders });
+    const cloudState = JSON.stringify({ diaries: cloudDiaries, folders: cloudFolders });
+    if (localState !== cloudState) {
+      localStorage.setItem("paperStarLocalBackup", localState);
+    }
+  }
+
+  setLocalState(cloudDiaries, cloudFolders);
+  refreshVisibleLists();
+}
+
+function subscribeToCloud(user) {
+  cloudUnsubscribe = getCloudDocRef(user.uid).onSnapshot(snapshot => {
+    if (!snapshot.exists) {
+      return;
+    }
+
+    const data = snapshot.data() || {};
+    const cloudDiaries = Array.isArray(data.diaries) ? data.diaries : [];
+    const cloudFolders = Array.isArray(data.folders) ? data.folders : [];
+
+    setLocalState(cloudDiaries, cloudFolders);
+    refreshVisibleLists();
+  });
+}
+
+async function syncStateToCloud() {
+  if (!currentUser || !firestoreDb) {
+    return;
+  }
+
+  try {
+    await getCloudDocRef(currentUser.uid).set({
+      diaries: getDiaries(),
+      folders: getFolders(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      clientUpdatedAt: Date.now()
+    }, { merge: true });
+  } catch (error) {
+    console.error("Cloud sync failed:", error);
+  }
+}
+
+function authErrorMessage(error) {
+  const code = error && error.code ? error.code : "";
+
+  if (code === "auth/invalid-email") return "This email is not valid.";
+  if (code === "auth/missing-password") return "Please enter your password.";
+  if (code === "auth/weak-password") return "Password is too weak.";
+  if (code === "auth/wrong-password") return "Wrong password.";
+  if (code === "auth/user-not-found") return "No account found for this email.";
+  if (code === "auth/email-already-in-use") return "This email already has an account. Use Log In.";
+  if (code === "auth/invalid-credential") return "Wrong email or password.";
+  if (code === "auth/unauthorized-domain") return "Add your website domain in Firebase authorized domains.";
+  if (code === "auth/operation-not-allowed") return "Enable Email/Password in Firebase Auth.";
+  return "Sign in could not be completed yet.";
+}
+
+function initializeFirebase() {
+  if (!hasFirebaseConfig()) {
+    return false;
+  }
+
+  if (firebaseApp) {
+    return true;
+  }
+
+  firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+  firebaseAuth = firebase.auth();
+  firestoreDb = firebase.firestore();
+
+  firebaseAuth.onAuthStateChanged(async user => {
+    currentUser = user;
+    updateAuthUi();
+
+    if (cloudUnsubscribe) {
+      cloudUnsubscribe();
+      cloudUnsubscribe = null;
+    }
+
+    if (!user) {
+      return;
+    }
+
+    await ensureCloudDataForUser(user);
+    subscribeToCloud(user);
+  });
+
+  return true;
+}
+
+function setAuthMode(mode) {
+  authMode = mode === "login" ? "login" : "signup";
+  const isLogin = authMode === "login";
+  authTitle.textContent = isLogin ? "Log In" : "Create Your Account";
+  authSubtext.textContent = isLogin
+    ? "Log in with your email and password to open your saved diaries."
+    : "Use your email and password to save diaries and folders.";
+  authContinueBtn.textContent = isLogin ? "Log In" : "Continue";
+  loginLinkBtn.style.display = isLogin ? "none" : "block";
+}
+
+function openAuthPopup(mode = "signup") {
+  setAuthMode(mode);
+  authPopup.style.display = "flex";
+  authEmail.value = "";
+  authPass.value = "";
+  authMessage.textContent = "";
+  authMessage.style.color = "#a14f4f";
+  initializeFirebase();
+
+  if (currentUser) {
+    authMessage.style.color = "#4f7a58";
+    authMessage.textContent = "Signed in as " + (currentUser.email || "your account") + ".";
+  } else if (!hasFirebaseConfig()) {
+    authMessage.textContent = "Add your Firebase config first to make account sync work.";
+  }
+
+  setTimeout(() => authEmail.focus(), 0);
+}
+
+function closeAuthPopup() {
+  authPopup.style.display = "none";
+  authEmail.value = "";
+  authPass.value = "";
+  authMessage.textContent = "";
+  authMessage.style.color = "#a14f4f";
+}
+
+function openLoginTab() {
+  const loginUrl = new URL(window.location.href);
+  loginUrl.searchParams.set("auth", "login");
+  window.open(loginUrl.toString(), "_blank");
+}
+
+async function submitEmailAuth() {
+  if (!initializeFirebase()) {
+    authMessage.textContent = "Add your Firebase config first.";
+    return;
+  }
+
+  const email = authEmail.value.trim();
+  const password = authPass.value.trim();
+
+  if (!email || !password) {
+    authMessage.textContent = "Please fill email and password.";
+    return;
+  }
+
+  try {
+    if (authMode === "login") {
+      await firebaseAuth.signInWithEmailAndPassword(email, password);
+      authMessage.style.color = "#4f7a58";
+      authMessage.textContent = "Signed in. Your diaries will sync.";
+    } else {
+      await firebaseAuth.createUserWithEmailAndPassword(email, password);
+      authMessage.style.color = "#4f7a58";
+      authMessage.textContent = "Account created. Your diaries will sync.";
+    }
+
+    setTimeout(() => {
+      closeAuthPopup();
+    }, 900);
+  } catch (error) {
+    authMessage.style.color = "#a14f4f";
+    authMessage.textContent = authErrorMessage(error);
+  }
+}
+
+function signOutAccount() {
+  if (!firebaseAuth) {
+    closeAuthPopup();
+    return;
+  }
+
+  firebaseAuth.signOut().then(() => {
+    closeAuthPopup();
+  });
 }
 
 function requestDiaryAccess() {
@@ -685,6 +1095,7 @@ function showDiaryPage(readOnly = false) {
 
 function createEntry() {
   currentMode = "create";
+  lastListMode = "home";
   editIndex = null;
   resetDraftState();
   showDiaryPage(false);
@@ -762,7 +1173,7 @@ function makeChecklistItem(text = "", done = false) {
   wrapper.innerHTML = `
     <button class="checkCircle ${done ? "checked" : ""}" type="button"></button>
     <input class="checkInput" value="${escapeHtml(text)}" placeholder="Write checklist item...">
-    <button class="smallAction" type="button">×</button>
+    <button class="smallAction" type="button">x</button>
   `;
   return wrapper;
 }
@@ -816,7 +1227,9 @@ function saveEntry() {
   const entry = {
     title,
     content,
-    hidden: previous ? !!previous.hidden : false
+    hidden: previous ? !!previous.hidden : false,
+    createdAt: previous && previous.createdAt ? previous.createdAt : Date.now(),
+    updatedAt: Date.now()
   };
 
   if (editIndex !== null) {
@@ -851,10 +1264,10 @@ function viewEntries() {
     div.className = "folderEntry";
     div.innerHTML = `
       <div class="itemMain" onclick="handleFolderClick(${index})">
-        <span>📁 <b>${escapeHtml(folder.name)}</b></span>
+        <span>Folder: <b>${escapeHtml(folder.name)}</b></span>
       </div>
       <div class="itemActions">
-        <button class="dotBtn" onclick="toggleFolderMenu(event, ${index})">⋮</button>
+        <button class="dotBtn" onclick="toggleFolderMenu(event, ${index})">...</button>
         <div class="optionsMenu" id="folderMenu-${index}">
           <button onclick="startRenameFolder(${index})">Rename Folder</button>
           <button onclick="deleteFolder(${index})">Delete Folder</button>
@@ -871,7 +1284,8 @@ function viewEntries() {
     div.className = "entry";
     div.innerHTML = `
       <span class="itemMain" onclick="openView(${index})">
-        <b>${escapeHtml(entry.title)}</b>
+        <span class="entryTitle"><b>${escapeHtml(entry.title)}</b></span>
+        <span class="entryMeta">${escapeHtml(formatRelativeTime(entry.updatedAt))}</span>
       </span>
       <button class="plusBtn" onclick="addToFolder(${index})">+</button>
     `;
@@ -930,7 +1344,7 @@ function deleteMode() {
       <div class="itemMain">
         <b>${escapeHtml(entry.title)}</b>
       </div>
-      <div class="trashBtn" onclick="deleteOne(${index})">🗑</div>
+      <div class="trashBtn" onclick="deleteOne(${index})">Delete</div>
     `;
     list.appendChild(div);
   });
@@ -1007,6 +1421,11 @@ function goBack() {
 
     if (lastListMode === "delete") {
       deleteMode();
+      return;
+    }
+
+    if (lastListMode === "home") {
+      goHome();
       return;
     }
 
@@ -1146,10 +1565,11 @@ function openFolder(folderIndex) {
     div.className = "entry";
     div.innerHTML = `
       <div class="itemMain" onclick="openView(${entryIndex})">
-        <b>${escapeHtml(entry.title)}</b>
+        <span class="entryTitle"><b>${escapeHtml(entry.title)}</b></span>
+        <span class="entryMeta">${escapeHtml(formatRelativeTime(entry.updatedAt))}</span>
       </div>
       <div class="itemActions">
-        <button class="dotBtn" onclick="toggleFolderEntryMenu(event, ${entryIndex})">⋮</button>
+        <button class="dotBtn" onclick="toggleFolderEntryMenu(event, ${entryIndex})">...</button>
         <div class="optionsMenu" id="folderEntryMenu-${entryIndex}">
           <button onclick="removeFromFolder(${entryIndex})">Remove from Folder</button>
         </div>
@@ -1254,7 +1674,6 @@ editorInput.addEventListener("input", event => {
   if (event.target.classList.contains("checkInput")) {
     event.target.style.color = "#5a4a42";
     event.target.style.webkitTextFillColor = "#5a4a42";
-    return;
   }
 });
 
@@ -1311,6 +1730,17 @@ passwordInput.addEventListener("keydown", event => {
   }
 });
 
+authPass.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    submitEmailAuth();
+  }
+});
+
+initializeFirebase();
+updateAuthUi();
+if (new URLSearchParams(window.location.search).get("auth") === "login") {
+  openAuthPopup("login");
+}
 goHome();
 </script>
 </body>
